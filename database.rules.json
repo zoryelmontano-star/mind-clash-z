@@ -22,7 +22,7 @@
         "answers": {
           "$round": {
             "$uid": {
-              ".write": "auth != null && auth.uid === $uid && !data.exists() && newData.exists() && root.child('rooms').child($code).child('state/phase').val() === 'question' && root.child('rooms').child($code).child('state/round').val() === $round * 1 && now < root.child('rooms').child($code).child('state/deadline').val() && root.child('rooms').child($code).child('players').child(auth.uid).exists()",
+              ".write": "auth != null && auth.uid === $uid && !data.exists() && newData.exists() && root.child('rooms').child($code).child('state/phase').val() === 'question' && now < root.child('rooms').child($code).child('state/deadline').val() && root.child('rooms').child($code).child('players').child(auth.uid).exists()",
               ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 3"
             }
           }
