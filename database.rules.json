@@ -5,24 +5,19 @@
     "rooms": {
       "$code": {
         ".read": "auth != null",
-        ".write": "auth != null && !data.exists() && newData.child('hostId').val() === auth.uid && newData.child('state/phase').val() === 'lobby' && newData.child('players').child(auth.uid).exists()",
-        ".validate": "newData.hasChildren(['hostId', 'title', 'state', 'players'])",
-        "hostId": { ".validate": "newData.isString() && newData.val() === auth.uid" },
-        "title": { ".validate": "newData.isString() && newData.val().length <= 36" },
+        ".write": "auth != null && !data.exists() && newData.child('hostId').val() === auth.uid && newData.child('state/phase').val() === 'lobby'",
         "state": {
-          ".write": "auth != null && data.parent().child('hostId').val() === auth.uid",
-          ".validate": "newData.hasChildren(['phase', 'round', 'queue']) && (newData.child('phase').val() === 'lobby' || newData.child('phase').val() === 'question' || newData.child('phase').val() === 'reveal' || newData.child('phase').val() === 'finished')"
+          ".write": "auth != null && root.child('rooms').child($code).child('hostId').val() === auth.uid"
         },
         "players": {
           "$uid": {
-            ".write": "auth != null && (data.parent().parent().child('hostId').val() === auth.uid || ($uid === auth.uid && data.parent().parent().child('state/phase').val() === 'lobby'))",
-            ".validate": "newData.hasChildren(['name', 'score']) && newData.child('name').isString() && newData.child('name').val().length <= 22 && newData.child('score').isNumber() && newData.child('score').val() >= 0"
+            ".write": "auth != null && (root.child('rooms').child($code).child('hostId').val() === auth.uid || (auth.uid === $uid && root.child('rooms').child($code).child('state/phase').val() === 'lobby'))"
           }
         },
         "answers": {
           "$round": {
             "$uid": {
-              ".write": "auth != null && auth.uid === $uid && !data.exists() && newData.exists() && root.child('rooms').child($code).child('state/phase').val() === 'question' && now < root.child('rooms').child($code).child('state/deadline').val() && root.child('rooms').child($code).child('players').child(auth.uid).exists()",
+              ".write": "auth != null && auth.uid === $uid && !data.exists() && root.child('rooms').child($code).child('state/phase').val() === 'question' && root.child('rooms').child($code).child('players').child(auth.uid).exists() && now < root.child('rooms').child($code).child('state/deadline').val()",
               ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 3"
             }
           }
