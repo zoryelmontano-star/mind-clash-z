@@ -179,7 +179,8 @@ const RAW=[
 ["Gaming","superhard","In chess notation, which symbol commonly denotes a checkmate?",["#", "+", "!", "?"],0,"A plus sign indicates check, while a hash commonly indicates mate."],
 ];
 const ART={'Philippines':'🇵🇭','K-Drama':'🎬','History':'🏛️','World':'🌐','Geography':'🗺️','Science':'🔬','Movies':'🍿','Music':'🎵','Sports':'🏅','Technology':'📱','Food':'🍜','Animals':'🦁','Space':'🪐','Literature':'📚','Art':'🎨','Mythology':'⚡','Business':'💼','Computers':'💻','Nature':'🌿','Language':'🔤','Gaming':'🎮'};
-const DATA=RAW.map((a,i)=>({id:i+1,cat:a[0],diff:a[1],q:a[2],opts:a[3],correct:a[4],trivia:a[5]}));
+function positionChoices(a,i){const correct=a[3][a[4]];const wrong=a[3].filter((_,j)=>j!==a[4]);const n=i+1;for(let j=wrong.length-1;j>0;j--){const k=(n*13+j*7)% (j+1);[wrong[j],wrong[k]]=[wrong[k],wrong[j]]}const at=(n*7+1)%4;wrong.splice(at,0,correct);return {id:n,cat:a[0],diff:a[1],q:a[2],opts:wrong,correct:at,trivia:a[5]}}
+const DATA=RAW.map(positionChoices);
 const $=id=>document.getElementById(id);const letters=['A','B','C','D'];const seconds={easy:20,medium:15,hard:12,superhard:15};const points={easy:100,medium:200,hard:300,superhard:300};const multiplier={easy:1,medium:1,hard:1,superhard:2};let game=null,clock=null,remaining=0,audioCtx=null,musicLoop=null,musicStep=0,paused=false,selected=-1,introInterval=null,introDelay=null;
 $('cat').innerHTML='<option value="All">🎲 All Categories (Mixed)</option>'+Object.keys(ART).map(x=>`<option value="${x}">${ART[x]} ${x}</option>`).join('');
 $('mode').onchange=()=>$('p2box').classList.toggle('hidden',$('mode').value!=='duel');
