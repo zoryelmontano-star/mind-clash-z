@@ -57,3 +57,9 @@ select option{background:#122348!important;color:white!important}
 .category-art{border:1px solid #5c65ba!important}
 body>main>footer,.wrap footer{color:#98a7d5!important}
 @media(max-width:780px){#modeHome{grid-template-columns:1fr;padding:22px 17px;gap:14px}#modeHome .master-intro{gap:0}#homeMascot .master-avatar{width:190px!important}#modeHome .mode-choices>*{min-height:72px;font-size:1.1rem}#modeHome .master-says{font-size:.88rem}#modeHome>.hint{font-size:.75rem}.audio-console{margin:8px 0 18px}.master-intro{gap:10px!important}#entry .master-avatar{width:100px!important}.panel{padding:18px!important}}
+
+/* Audio console supersedes the original duplicated prototype sound switches */
+#setup>.settings{display:none!important}
+#modeHome .mode-choices>a,#modeHome .mode-choices>button{display:flex;align-items:center;justify-content:center}
+#questionPanel .master-says{font-size:.9rem}
+#entry .master-intro{justify-content:center}
