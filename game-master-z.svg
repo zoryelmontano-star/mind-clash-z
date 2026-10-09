@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 420" role="img" aria-labelledby="title desc">
+<title id="title">Game Master Z</title><desc id="desc">Cheerful anime girl with long dark hair and pink-cyan headset, violet jacket and lightning-Z hoodie, waving hello.</desc>
+<defs><linearGradient id="hair" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#382b51"/><stop offset=".55" stop-color="#1b1834"/><stop offset="1" stop-color="#0b152e"/></linearGradient><linearGradient id="jacket" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#ad52ee"/><stop offset=".55" stop-color="#48368f"/><stop offset="1" stop-color="#20345c"/></linearGradient><linearGradient id="face" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe1c8"/><stop offset="1" stop-color="#e9a48f"/></linearGradient><linearGradient id="headband"><stop stop-color="#08d7fb"/><stop offset=".5" stop-color="#ed4ecb"/><stop offset="1" stop-color="#7268ff"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="5"/></filter></defs>
+<g opacity=".75"><path d="M36 114L41 101L46 114L58 120L45 126L40 139L35 126L24 120Z" fill="#ffda51"/><circle cx="273" cy="100" r="8" fill="#fe70d8"/><path d="M282 163v-20M272 153h20M51 294v-22M40 283h22" stroke="#4bf5f3" stroke-width="4" stroke-linecap="round"/></g>
+<path d="M75 182C31 242 41 360 21 391C54 425 88 394 110 408C138 430 174 401 202 416C231 423 294 395 312 368C286 331 314 246 256 166Z" fill="url(#hair)" stroke="#504064" stroke-width="6"/>
+<path d="M62 408C53 351 88 302 113 299L156 289L219 292C252 301 291 347 299 408Z" fill="url(#jacket)" stroke="#c76ff8" stroke-width="6"/>
+<path d="M135 303L118 344L140 410H242L232 341L213 299Z" fill="#141c37" stroke="#57c7ed" stroke-width="3"/>
+<path d="M167 328L209 328L195 350L212 350L168 399L183 364H165Z" fill="#62edff" stroke="#0a6282" stroke-width="3"/>
+<path d="M131 292l-16 48l-31 19M219 296l14 40l44 22" fill="none" stroke="#e377e8" stroke-width="9" stroke-linecap="round"/>
+<path d="M132 280L146 307C167 329 198 327 213 298L208 272Z" fill="url(#face)"/>
+<path d="M74 174C68 96 101 56 166 54C238 50 284 91 276 175C271 259 226 303 175 305C117 303 70 257 74 174Z" fill="url(#face)" stroke="#cd8c80" stroke-width="3"/>
+<path d="M70 173C49 71 114 26 183 35C241 31 295 70 283 158C268 132 246 122 232 92C208 135 168 141 129 141C114 173 83 169 70 173Z" fill="url(#hair)" stroke="#35233f" stroke-width="5"/>
+<path d="M110 129C127 95 149 81 169 81C154 121 132 133 100 143M192 93C215 77 245 91 256 121" fill="none" stroke="#493052" stroke-width="18" stroke-linecap="round"/>
+<path d="M89 162C75 192 82 226 92 258M270 166C286 202 273 240 259 255" fill="none" stroke="#28213c" stroke-width="17" stroke-linecap="round"/>
+<path d="M98 173Q129 151 153 169M198 171Q226 151 252 172" fill="none" stroke="#2b2237" stroke-width="8" stroke-linecap="round"/>
+<ellipse cx="127" cy="195" rx="19" ry="25" fill="#fff"/><ellipse cx="224" cy="195" rx="19" ry="25" fill="#fff"/>
+<ellipse cx="129" cy="198" rx="12" ry="19" fill="#704ca1"/><ellipse cx="225" cy="198" rx="12" ry="19" fill="#704ca1"/>
+<ellipse cx="130" cy="198" rx="7" ry="13" fill="#241939"/><ellipse cx="224" cy="198" rx="7" ry="13" fill="#241939"/>
+<circle cx="134" cy="190" r="5" fill="#fff"/><circle cx="230" cy="190" r="5" fill="#fff"/>
+<ellipse cx="111" cy="233" rx="21" ry="9" fill="#f58ea0" opacity=".45"/><ellipse cx="241" cy="233" rx="21" ry="9" fill="#f58ea0" opacity=".45"/>
+<path d="M155 245Q176 272 200 245Q183 284 165 267Z" fill="#8a3c69" stroke="#a64b6c" stroke-width="3"/><path d="M163 261Q175 254 189 261" stroke="#f5a0ae" stroke-width="5" stroke-linecap="round"/>
+<path d="M74 154C57 89 100 36 167 31C248 27 291 78 287 146" fill="none" stroke="#11182d" stroke-width="24" stroke-linecap="round"/>
+<path d="M75 150C58 88 103 37 167 31C248 27 291 76 286 146" fill="none" stroke="url(#headband)" stroke-width="13" stroke-linecap="round"/>
+<rect x="61" y="161" width="33" height="69" rx="14" fill="#2b2673" stroke="#27daff" stroke-width="8"/><rect x="262" y="163" width="32" height="69" rx="14" fill="#2b2673" stroke="#ff6ce2" stroke-width="8"/>
+<path d="M288 222Q306 245 271 260" fill="none" stroke="#7ceef5" stroke-width="8" stroke-linecap="round"/><circle cx="268" cy="262" r="7" fill="#ff69da"/>
+<path d="M270 347C301 308 304 255 309 219" stroke="#5e4bc7" stroke-width="35" fill="none" stroke-linecap="round"/>
+<path d="M300 225Q281 194 289 180Q300 172 306 185L316 207L325 190Q339 188 334 205L320 243Q313 264 298 260Z" fill="url(#face)" stroke="#cc8c79" stroke-width="4"/>
+<path d="M58 352C39 340 31 327 33 311" stroke="#7b4bc3" stroke-width="29" fill="none" stroke-linecap="round"/>
+<path d="M33 311Q12 312 13 290L16 267Q17 257 27 264L31 276L33 241Q43 231 47 244L48 274L55 258Q66 250 67 267L61 306Z" fill="url(#face)" stroke="#c38a7c" stroke-width="4"/>
+</svg>
