@@ -12,7 +12,7 @@
 <section class="panel hide" id="endPanel"><h2>🏆 FINAL LEADERBOARD</h2><p>Match complete!</p><button id="rematch" class="go hide">BACK TO LOBBY</button></section>
 </div><aside><section class="panel"><h2>Live A/B/C/D Monitor</h2><div id="votes"></div><p id="totalVotes" class="muted"></p></section><section class="panel"><h2>Leaderboard</h2><div id="leaderboard"></div></section></aside></div></section>
 <div id="introOverlay" class="start-overlay hide"><div><p id="introKicker" class="mode">READY?</p><div id="introCount" class="count">3</div><div id="introBattle" class="battle hide">BATTLE OF THE BRAINS BEGINS!</div></div></div><div id="confettiLayer" class="confetti-layer hide" aria-hidden="true"></div><footer class="muted">Prototype: sign-in is anonymous, no password needed. Multiplayer scoring is host-controlled, not yet competition-grade anti-cheat.</footer></main>
-<script src="./mascot.js"></script>
+<script src="./explanations.js"></script><script src="./mascot.js"></script>
 <script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import{getAuth,signInAnonymously,onAuthStateChanged}from'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
@@ -93,7 +93,7 @@ $('revealStats').innerHTML=bars;$('revealTotal').textContent=total+' of '+player
 $('correctLabel').textContent=['A','B','C','D'][q.correct]+'. '+q.opts[q.correct];
 $('factCategory').textContent=q.cat+' · '+q.diff.toUpperCase();$('fact').textContent=MCZ.explain(q);$('revealImage').innerHTML=MCZ.art(q);MCZ.stopVoice();
 $('bonus').textContent=q.diff==='superhard'?'SUPER HARD: 2× BASE POINTS!':'CORRECT ANSWERS EARN '+base[q.diff]+' POINTS';
-$('feedback').textContent=MCZ.feedback(q,chosen,submittedRound===st.round?lastSubmittedRemaining:null,seconds[q.diff]);
+$('feedback').textContent=MCZ.feedback(q,chosen,submittedRound===st.round?lastSubmittedRemaining/1000:null,seconds[q.diff]);
 if(chosen===q.correct&&lastConfettiRound!==st.round){lastConfettiRound=st.round;confetti()}
 }else{$('votes').innerHTML='<p class="vote-locked">🔒 A/B/C/D statistics unlock after the correct answer.</p>';$('totalVotes').textContent='Vote distribution stays hidden until time is up.'}
 }
