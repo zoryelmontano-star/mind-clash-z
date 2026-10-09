@@ -170,4 +170,5 @@ export const RAW=[
 ["Gaming","superhard","In chess notation, which symbol commonly denotes a checkmate?",["#", "+", "!", "?"],0,"A plus sign indicates check, while a hash commonly indicates mate."],
 ];
 export const ART={'Philippines':'🇵🇭','K-Drama':'🎬','History':'🏛️','World':'🌐','Geography':'🗺️','Science':'🔬','Movies':'🍿','Music':'🎵','Sports':'🏅','Technology':'📱','Food':'🍜','Animals':'🦁','Space':'🪐','Literature':'📚','Art':'🎨','Mythology':'⚡','Business':'💼','Computers':'💻','Nature':'🌿','Language':'🔤','Gaming':'🎮'};
-export const QUESTIONS=RAW.map((a,i)=>({id:i+1,cat:a[0],diff:a[1],q:a[2],opts:a[3],correct:a[4],trivia:a[5]}));
+function positionChoices(a,i){const correct=a[3][a[4]];const wrong=a[3].filter((_,j)=>j!==a[4]);const n=i+1;for(let j=wrong.length-1;j>0;j--){const k=(n*13+j*7)% (j+1);[wrong[j],wrong[k]]=[wrong[k],wrong[j]]}const at=(n*7+1)%4;wrong.splice(at,0,correct);return {id:n,cat:a[0],diff:a[1],q:a[2],opts:wrong,correct:at,trivia:a[5]}}
+export const QUESTIONS=RAW.map(positionChoices);
