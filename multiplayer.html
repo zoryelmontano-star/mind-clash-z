@@ -53,19 +53,57 @@ $('rematch').onclick=async()=>{if(!isHost())return;const players=Object.fromEntr
 async function advance(index){const qid=room.state.queue[index];if(!qid){await update(ref(db,'rooms/'+code+'/state'),{phase:'finished',deadline:0});return}const q=QUESTIONS.find(q=>q.id===qid);if(!q)return;await update(ref(db,'rooms/'+code+'/state'),{phase:index===0?'intro':'question',round:index,deadline:Date.now()+serverOffset+(index===0?5000:seconds[q.diff]*1000)})}
 async function vote(choice){if(!room||room.state.phase!=='question'||localLocked||submitting)return;if(Date.now()+serverOffset>=room.state.deadline)return;submitting=true;$('submit').disabled=true;const timeLeft=Math.max(0,room.state.deadline-(Date.now()+serverOffset));try{const ansRef=ref(db,'rooms/'+code+'/answers/'+room.state.round+'/'+uid);const tx=await runTransaction(ansRef,v=>v===null?choice:undefined,{applyLocally:false});if(tx.committed){localLocked=true;submittedRound=room.state.round;lastSubmittedRemaining=timeLeft;msg('Answer submitted! Waiting for time to run out.')}else msg('Already answered this round.')}catch(e){msg('Answer could not submit: '+e.message)}finally{submitting=false;if(room)render()}}
 async function finalize(){if(!isHost()||hostFinalizing||room.state.phase!=='question')return;hostFinalizing=true;try{const current=room.state.round,q=QUESTIONS.find(x=>x.id===room.state.queue[current]);const a=room.answers?.[current]||{};const updates={'state/phase':'reveal'};for(const [id,p]of Object.entries(room.players||{})){const val=a[id];if(val===q.correct)updates['players/'+id+'/score']=(p.score||0)+base[q.diff]}await update(roomRef(),updates)}catch(e){msg('Reveal failed: '+e.message)}finally{hostFinalizing=false}}
-function render(){if(!room)return;const state=room.state||{},phase=state.phase,host=isHost(),players=Object.values(room.players||{}).sort((a,b)=>(b.score||0)-(a.score||0));$('pause').classList.toggle('hide',!host||!['question','paused'].includes(phase));$('pause').textContent=phase==='paused'?'RESUME GAME':'PAUSE GAME';$('quit').classList.toggle('hide',!host||['lobby','finished'].includes(phase));$('pauseMessage').classList.toggle('hide',phase!=='paused');$('roomTitle').textContent=room.title;$('roomBadge').textContent='CODE '+code;$('lobby').classList.toggle('hide',phase!=='lobby');$('questionPanel').classList.toggle('hide',!['question','paused','countdown'].includes(phase));$('revealPanel').classList.toggle('hide',phase!=='reveal');$('endPanel').classList.toggle('hide',phase!=='finished');$('start').classList.toggle('hide',!host);$('next').classList.toggle('hide',!host);$('rematch').classList.toggle('hide',!host);$('lobbyNames').innerHTML=players.map(p=>'<div class="board">'+safe(p.name)+'</div>').join('');$('leaderboard').innerHTML=players.map((p,i)=>'<div class="board"><span>'+['🥇','🥈','🥉'][i%3]+' '+safe(p.name)+'</span><b>'+Number(p.score||0).toLocaleString()+' pts</b></div>').join('');
-if(phase==='lobby'){$('votes').innerHTML='<p class="muted">Waiting for game.</p>';$('totalVotes').textContent=players.length+' player(s) joined';return}
+function render(){
+if(!room)return;const st=room.state||{},phase=st.phase,host=isHost();
+const players=Object.entries(room.players||{}).sort((a,b)=>(b[1].score||0)-(a[1].score||0));
+$('pause').classList.toggle('hide',!host||!['question','paused'].includes(phase));$('pause').textContent=phase==='paused'?'RESUME GAME':'PAUSE GAME';
+$('quit').classList.toggle('hide',!host||['lobby','finished'].includes(phase));$('pauseMessage').classList.toggle('hide',phase!=='paused');
+$('roomTitle').textContent=room.title;$('roomBadge').textContent='CODE '+code;
+$('lobby').classList.toggle('hide',phase!=='lobby');
+$('questionPanel').classList.toggle('hide',!['question','paused'].includes(phase));
+$('revealPanel').classList.toggle('hide',phase!=='reveal');$('endPanel').classList.toggle('hide',phase!=='finished');
+$('introOverlay').classList.toggle('hide',phase!=='intro');
+$('start').classList.toggle('hide',!host);$('next').classList.toggle('hide',!host);$('rematch').classList.toggle('hide',!host);
+$('lobbyNames').innerHTML=players.map(([id,p])=>'<div class="board">'+safe(p.name)+(id===room.hostId?' · HOST':'')+'</div>').join('');
+$('leaderboard').innerHTML=players.map(([id,p],i)=>'<div class="board"><span>'+(i===0?'👑 ':'')+(i+1)+'. '+safe(p.name)+'</span><b>'+Number(p.score||0).toLocaleString()+' pts</b></div>').join('');
+if(phase==='lobby'||phase==='intro'){$('votes').innerHTML='<p class="vote-locked">🔒 Voting counts are hidden until the answer reveal.</p>';$('totalVotes').textContent='';return}
 if(phase==='finished'){$('votes').innerHTML='';$('totalVotes').textContent='Match finished';return}
-const qid=state.queue[state.round],q=QUESTIONS.find(x=>x.id===qid);if(!q)return;
-if(lastQid!==qid){localLocked=false;lastQid=qid}
-const answers=room.answers?.[state.round]||{},chosen=answers[uid];if(chosen!==undefined)localLocked=true;
-$('questionNum').textContent='ROUND '+(state.round+1)+' / '+state.queue.length;$('difficulty').textContent=q.diff.toUpperCase()+(q.diff==='superhard'?' ×2':'');$('questionText').textContent=q.q;
-$('answerButtons').innerHTML=q.opts.map((t,i)=>'<button data-choice="'+i+'" class="'+(chosen===i?'chosen':'')+'" '+(chosen!==undefined||phase!=='question'?'disabled':'')+'><b>'+['A','B','C','D'][i]+'</b> · '+safe(t)+'</button>').join('');$('answerButtons').querySelectorAll('button').forEach(b=>b.onclick=()=>vote(Number(b.dataset.choice)));$('answerHint').textContent=phase==='countdown'?'GET READY! 3… 2… 1…':phase==='paused'?'Game paused by host. Answers are temporarily disabled.':chosen!==undefined?'Answer locked. Reveal happens when time reaches zero.':'Choose your answer before time runs out.';
-const vals=Object.values(answers);const cnt=[0,1,2,3].map(i=>vals.filter(v=>v===i).length),total=vals.length;
-$('votes').innerHTML=cnt.map((n,i)=>'<div class="vote"><label><span>'+['A','B','C','D'][i]+' · '+safe(q.opts[i])+(phase==='reveal'&&q.correct===i?' ✓':'')+'</span><b>'+n+' ('+(total?Math.round(n/total*100):0)+'%)</b></label><div class="bar"><div style="width:'+(total?100*n/total:0)+'%"></div></div></div>').join('');
-$('totalVotes').textContent=total+' of '+players.length+' answered';
-$('correctLabel').textContent=['A','B','C','D'][q.correct]+'. '+q.opts[q.correct];$('factCategory').textContent=q.cat+' · '+q.diff.toUpperCase();$('fact').textContent=q.trivia;$('bonus').textContent=q.diff==='superhard'?'SUPER HARD: 2× BASE POINTS!':'CORRECT ANSWERS EARN '+base[q.diff]+' POINTS';
+const q=QUESTIONS.find(x=>x.id===st.queue[st.round]);if(!q)return;
+if(lastQid!==q.id){lastQid=q.id;localLocked=false;selectedOption=null;lastSubmittedRemaining=null;submittedRound=null;lastConfettiRound=null}
+const answers=room.answers?.[st.round]||{},chosen=answers[uid];if(chosen!==undefined)localLocked=true;
+$('questionNum').textContent='ROUND '+(st.round+1)+' / '+st.queue.length;
+$('difficulty').textContent=q.diff.toUpperCase()+(q.diff==='superhard'?' ×2':'');
+$('questionLead').textContent=LEADS[q.cat]||'Think, select and then submit.';
+$('questionText').textContent=q.q;
+$('answerButtons').innerHTML=q.opts.map((t,i)=>'<button data-choice="'+i+'" class="'+((chosen!==undefined?chosen:selectedOption)===i?'chosen':'')+'" '+(chosen!==undefined||phase!=='question'?'disabled':'')+'><b>'+['A','B','C','D'][i]+'</b> · '+safe(t)+'</button>').join('');
+$('answerButtons').querySelectorAll('button').forEach(b=>b.onclick=()=>choose(Number(b.dataset.choice)));
+$('submit').disabled=phase!=='question'||chosen!==undefined||selectedOption===null||submitting;
+$('answerHint').textContent=phase==='paused'?'Game paused by host.':chosen!==undefined?'Answer submitted and locked. Waiting for time to run out.':selectedOption!==null?'Selected '+['A','B','C','D'][selectedOption]+'. You may change it until you press SUBMIT.':'Pick an answer, then press SUBMIT.';
+const votes=Object.values(answers),total=votes.length,counts=[0,1,2,3].map(i=>votes.filter(v=>v===i).length);
+if(phase==='reveal'){
+const bars=counts.map((n,i)=>'<div class="vote"><label><span>'+['A','B','C','D'][i]+' · '+safe(q.opts[i])+(q.correct===i?' ✓ CORRECT':'')+'</span><b>'+n+' ('+(total?Math.round(n/total*100):0)+'%)</b></label><div class="bar"><div style="width:'+(total?100*n/total:0)+'%"></div></div></div>').join('');
+$('votes').innerHTML=bars;$('totalVotes').textContent=total+' of '+players.length+' answers';
+$('revealStats').innerHTML=bars;$('revealTotal').textContent=total+' of '+players.length+' submitted';
+$('correctLabel').textContent=['A','B','C','D'][q.correct]+'. '+q.opts[q.correct];
+$('factCategory').textContent=q.cat+' · '+q.diff.toUpperCase();$('fact').textContent=explain(q);
+$('bonus').textContent=q.diff==='superhard'?'SUPER HARD: 2× BASE POINTS!':'CORRECT ANSWERS EARN '+base[q.diff]+' POINTS';
+$('feedback').textContent=feedback(q,chosen,submittedRound===st.round?lastSubmittedRemaining:null);
+if(chosen===q.correct&&lastConfettiRound!==st.round){lastConfettiRound=st.round;confetti()}
+}else{$('votes').innerHTML='<p class="vote-locked">🔒 A/B/C/D statistics unlock after the correct answer.</p>';$('totalVotes').textContent='Vote distribution stays hidden until time is up.'}
 }
-setInterval(()=>{if(!room)return;const st=room.state||{};if(st.phase==='paused'){$('timer').textContent='PAUSED';return}if(!['countdown','question'].includes(st.phase))return;const remain=Math.max(0,Math.ceil((st.deadline-(Date.now()+serverOffset))/1000));$('timer').textContent=st.phase==='countdown'?'START IN '+remain:remain+'s';if(remain===0){if(st.phase==='countdown'){if(isHost()&&!hostFinalizing){hostFinalizing=true;const q=QUESTIONS.find(q=>q.id===st.queue[st.round]);update(ref(db,'rooms/'+code+'/state'),{phase:'question',deadline:Date.now()+serverOffset+seconds[q.diff]*1000}).catch(e=>msg(e.message)).finally(()=>hostFinalizing=false)}return}$('answerButtons').querySelectorAll('button').forEach(b=>b.disabled=true);$('answerHint').textContent='TIME IS UP · revealing answer…';if(isHost())finalize()}},180);
+setInterval(()=>{
+if(!room)return;const st=room.state||{};
+if(st.phase==='paused'){$('timer').textContent='PAUSED';return}
+if(!['intro','question'].includes(st.phase))return;
+const ms=Math.max(0,st.deadline-(Date.now()+serverOffset)),n=Math.ceil(ms/1000);
+if(st.phase==='intro'){
+if(n>=5){$('introKicker').textContent='READY?';$('introCount').textContent='';$('introBattle').classList.add('hide')}
+else if(n>=2){$('introKicker').textContent='READY?';$('introCount').textContent=String(n-1);$('introBattle').classList.add('hide')}
+else{$('introKicker').textContent='';$('introCount').textContent='';$('introBattle').classList.remove('hide')}
+if(n===0&&isHost()&&!hostFinalizing){hostFinalizing=true;const q=QUESTIONS.find(x=>x.id===st.queue[st.round]);if(q)update(ref(db,'rooms/'+code+'/state'),{phase:'question',deadline:Date.now()+serverOffset+seconds[q.diff]*1000}).catch(e=>msg(e.message)).finally(()=>hostFinalizing=false)}
+return
+}
+$('timer').textContent=n+'s';if(n===0){$('answerButtons').querySelectorAll('button').forEach(b=>b.disabled=true);$('submit').disabled=true;$('answerHint').textContent='TIME IS UP · revealing…';if(isHost())finalize()}
+},180);
 const invite=new URLSearchParams(location.search).get('room');if(invite){$('roomCode').value=invite.toUpperCase();msg('Invite detected: enter a nickname and choose JOIN ROOM.')}
 </script></body></html>
