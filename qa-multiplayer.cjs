@@ -67,7 +67,7 @@ const solo=fs.readFileSync('index.html','utf8');
 for(const id of ['resultsModal','closeResults','showResults','revealPanel','leaderboard','rematchCategory']){
   assert.ok(multiplayer.includes('id="'+id+'"'),'Popup UI element missing: '+id);
 }
-assert.ok(multiplayer.includes("from'./questions.js?v=20261009d'"),'Multiplayer uses updated bank');
+assert.ok(multiplayer.includes("from'./questions.js?v=20261010e'"),'Multiplayer uses updated bank');
 assert.ok(solo.includes("from './questions.js?v=20261009d'"),'Solo uses updated bank');
 assert.ok(multiplayer.includes("MCZQuestionRotation.remaining(eligible)"),'Multiplayer must count only unseen questions');
 assert.ok(solo.includes("MCZQuestionRotation.remaining(pool)"),'Solo must count only unseen questions');
@@ -77,4 +77,25 @@ assert.ok(multiplayer.includes("seenIds:seenIds()"),'Each client shares prior qu
 assert.ok(multiplayer.includes("...playerHistoryTexts(room.players)"),'Queue avoids previously seen player questions');
 assert.ok(multiplayer.includes("MCZQuestionRotation.remember([q])"),'Each player remembers displayed questions');
 assert.ok(multiplayer.includes("$('resultsModal')"),'Results popup display follows the round');
+
+const roomRules=JSON.parse(fs.readFileSync('database.rules.json','utf8')).rules.rooms.$code;
+assert.ok(roomRules.state['.write'].includes('hostId'),'Host must have write permission to room/state');
+assert.ok(!roomRules.settings,'Root-level settings should not require a missing rules deployment');
+assert.ok(multiplayer.includes("'state/settings':{category:cat,difficulty:diff,rounds:n}"),'Rematch settings must be written only to authorized state path');
+assert.ok(!multiplayer.includes("'settings/category':"),'No unpermitted root settings writes');
+assert.ok(multiplayer.includes("session?.state?.settings||session?.settings"),'Room settings read supports replay version');
+assert.ok(multiplayer.includes("const APP_TAG='20261010e'"),'Refreshed multiplayer version must be loaded');
+assert.ok(core.version.includes('v5-rematch'),'All players must use updated voting/rematch protocol');
+const timerPattern=/const seconds=\{easy:(\d+),medium:(\d+),hard:(\d+),superhard:(\d+)\}/;
+for(const [mode,markup] of [['Solo',solo],['Multiplayer',multiplayer]]) {
+ const match=markup.match(timerPattern);
+ assert.ok(match,mode+' timer configuration exists');
+ assert.equal(match.slice(1).join(','),'30,30,30,30',mode+' uses consistent 30-second questions');
+}
+const fireworksZ=Number(multiplayer.match(/\.confetti-layer\{[^}]*z-index:(\d+)/)?.[1]);
+const popupZ=Number(multiplayer.match(/\.results-modal\{[^}]*z-index:(\d+)/)?.[1]);
+assert.ok(fireworksZ>popupZ,'Correct-answer confetti must be visibly above modal');
+assert.ok(multiplayer.includes("if(chosen===q.correct&&lastConfettiRound!==answerRoundKey(st))"),'Confetti only on correct answer and once per question');
+assert.ok(multiplayer.includes("rematchMessage('Could not start another match:"),'Replay failure is visible in popup');
+
 console.log('PASS '+checked+' cases across '+categories.length+' categories. Voting, scoring, shuffling, version checks, rematches verified.');
