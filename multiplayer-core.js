@@ -1,7 +1,7 @@
 /* Mind Clash Z multiplayer vote/count/score rules, shared by all categories. */
 (function (root) {
   'use strict';
-  const version = '2026-10-09-v2';
+  const version = '2026-10-09-v3-600';
   function roundKey(state) {
     if (!state || !Number.isInteger(Number(state.round)) || Number(state.round) < 0) return null;
     const matchId = String(state.matchId || '').trim();
