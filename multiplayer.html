@@ -87,7 +87,7 @@ $('lobby').classList.toggle('hide',phase!=='lobby');
 $('questionPanel').classList.toggle('hide',!['question','paused'].includes(phase));
 $('revealPanel').classList.toggle('hide',phase!=='reveal');$('endPanel').classList.toggle('hide',phase!=='finished');
 $('introOverlay').classList.toggle('hide',phase!=='intro');
-$('start').classList.toggle('hide',!host);$('next').classList.toggle('hide',!host);$('rematch').classList.toggle('hide',!host);
+$('start').classList.toggle('hide',!host);$('next').classList.toggle('hide',!host);$('next').textContent=st.round===st.queue.length-1?'VIEW RESULTS & PLAY AGAIN':'NEXT QUESTION';$('rematch').classList.toggle('hide',!host);
 $('rematchNote').textContent=host?'Everyone stays in this room. Play Again resets scores and starts fresh questions.':'Waiting for the host to choose Play Again. Stay in this room; no code or rejoin needed.';$('lobbyNames').innerHTML=players.map(([id,p])=>'<div class="board">'+safe(p.name)+(id===room.hostId?' · HOST':'')+'</div>').join('');
 $('leaderboard').innerHTML=players.map(([id,p],i)=>'<div class="board"><span>'+(i===0?'👑 ':'')+(i+1)+'. '+safe(p.name)+'</span><b>'+Number(p.score||0).toLocaleString()+' pts</b></div>').join('');
 if(phase==='lobby'||phase==='intro'){$('votes').innerHTML='<p class="vote-locked">🔒 Voting counts are hidden until the answer reveal.</p>';$('totalVotes').textContent='';return}
