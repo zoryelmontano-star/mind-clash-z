@@ -67,10 +67,14 @@ const solo=fs.readFileSync('index.html','utf8');
 for(const id of ['resultsModal','closeResults','showResults','revealPanel','leaderboard','rematchCategory']){
   assert.ok(multiplayer.includes('id="'+id+'"'),'Popup UI element missing: '+id);
 }
-assert.ok(multiplayer.includes("from'./questions.js?v=20261009c'"),'Multiplayer uses updated bank');
-assert.ok(solo.includes("from './questions.js?v=20261009c'"),'Solo uses updated bank');
+assert.ok(multiplayer.includes("from'./questions.js?v=20261009d'"),'Multiplayer uses updated bank');
+assert.ok(solo.includes("from './questions.js?v=20261009d'"),'Solo uses updated bank');
 assert.ok(multiplayer.includes("MCZQuestionRotation.remaining(eligible)"),'Multiplayer must count only unseen questions');
 assert.ok(solo.includes("MCZQuestionRotation.remaining(pool)"),'Solo must count only unseen questions');
 assert.ok(multiplayer.includes("$('questionImage').innerHTML=''"),'Duplicate question illustration removed');
 assert.ok(multiplayer.includes("room.settings"),'Room settings must persist');
+assert.ok(multiplayer.includes("seenIds:seenIds()"),'Each client shares prior question IDs');
+assert.ok(multiplayer.includes("...playerHistoryTexts(room.players)"),'Queue avoids previously seen player questions');
+assert.ok(multiplayer.includes("MCZQuestionRotation.remember([q])"),'Each player remembers displayed questions');
+assert.ok(multiplayer.includes("$('resultsModal')"),'Results popup display follows the round');
 console.log('PASS '+checked+' cases across '+categories.length+' categories. Voting, scoring, shuffling, version checks, rematches verified.');
