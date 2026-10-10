@@ -72,7 +72,7 @@ assert.ok(solo.includes("from './questions.js?v=20261009d'"),'Solo uses updated 
 assert.ok(multiplayer.includes("MCZQuestionRotation.remaining(eligible)"),'Multiplayer must count only unseen questions');
 assert.ok(solo.includes("MCZQuestionRotation.remaining(pool)"),'Solo must count only unseen questions');
 assert.ok(multiplayer.includes("$('questionImage').innerHTML=''"),'Duplicate question illustration removed');
-assert.ok(multiplayer.includes("room.settings"),'Room settings must persist');
+assert.ok(multiplayer.includes('const settingsFor='),'Game reads room configuration from its current stored state');
 assert.ok(multiplayer.includes("seenIds:seenIds()"),'Each client shares prior question IDs');
 assert.ok(multiplayer.includes("...playerHistoryTexts(room.players)"),'Queue avoids previously seen player questions');
 assert.ok(multiplayer.includes("MCZQuestionRotation.remember([q])"),'Each player remembers displayed questions');
