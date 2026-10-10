@@ -56,6 +56,7 @@ $('start').onclick=async()=>{if(!isHost()||room?.state?.phase!=='lobby')return;c
 $('next').onclick=async()=>{if(!isHost())return;await advance(room.state.round+1)};
 $('rematch').onclick=async()=>{
  if(!isHost()||!room||room.state.phase!=='finished')return;
+ const stalePlayers=MCZMulti.outOfDate(room.players);
  const oldQueue=room.state.queue||[];
  const roomHistory=Array.isArray(room.state.history)?room.state.history:oldQueue.map(id=>QUESTIONS.find(q=>q.id===id)).filter(Boolean).map(q=>q.q);
  const history=[...MCZQuestionRotation.readHistory(),...roomHistory];
@@ -63,13 +64,13 @@ $('rematch').onclick=async()=>{
  if(!nextQueue){msg('Not enough unique questions to start another match.');return}
  const nextQuestions=nextQueue.map(id=>QUESTIONS.find(q=>q.id===id));
  const updates={
-  'state/phase':'intro','state/round':0,'state/deadline':Date.now()+serverOffset+5000,
+  'state/phase':stalePlayers.length?'lobby':'intro','state/round':stalePlayers.length?-1:0,'state/deadline':stalePlayers.length?0:Date.now()+serverOffset+5000,
   'state/queue':nextQueue,'state/history':MCZQuestionRotation.extend(roomHistory,nextQuestions),
   'state/matchId':'g'+makeCode(),'state/pausedRemaining':null
  };
  for(const id of Object.keys(room.players||{}))updates['players/'+id+'/score']=0;
  $('rematch').disabled=true;
- try{await update(roomRef(),updates);MCZQuestionRotation.remember(nextQuestions);msg('New match started in room '+code)}
+ try{await update(roomRef(),updates);MCZQuestionRotation.remember(nextQuestions);msg(stalePlayers.length?'Room reset to lobby. Refresh and rejoin before starting: '+stalePlayers.map(p=>p.name).join(', '):'New match started in room '+code)}
  catch(e){msg('Rematch failed: '+e.message)}
  finally{$('rematch').disabled=false}
 };
