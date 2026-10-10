@@ -72,7 +72,7 @@ $('showResults').onclick=()=>{dismissedResults=null;$('resultsModal').classList.
 $('outsideNext').onclick=()=>{if(isHost()&&room?.state?.phase==='reveal')advance(room.state.round+1)};
 $('resultsModal').addEventListener('click',e=>{if(e.target===$('resultsModal'))$('closeResults').click()});
 $('rematchCategory').innerHTML='<option value="All">All Categories</option>'+[...new Set(QUESTIONS.map(q=>q.cat))].sort().map(x=>'<option value="'+x+'">'+x+'</option>').join('');$('multiCategory').innerHTML='<option value="All">🎲 All Categories</option>'+[...new Set(QUESTIONS.map(q=>q.cat))].sort().map(x=>'<option value="'+x+'">'+x+'</option>').join('');
-function refreshRoundOptions(){const count=QUESTIONS.filter(q=>($('multiCategory').value==='All'||q.cat===$('multiCategory').value)&&($('multiDifficulty').value==='random'||q.diff===$('multiDifficulty').value)).length;const current=Number($('roundCount').value)||5,opts=[2,5,8,10,15].filter(n=>n<=count);$('roundCount').innerHTML=opts.map(n=>'<option value="'+n+'">'+n+'</option>').join('');const ideal=opts.includes(current)?current:opts[opts.length-1];if(ideal)$('roundCount').value=String(ideal);$('availableCount').textContent=count+' unique questions available. Fresh questions are prioritized until the bank runs out.';$('create').disabled=!opts.length}
+function refreshRoundOptions(){const eligible=QUESTIONS.filter(q=>($('multiCategory').value==='All'||q.cat===$('multiCategory').value)&&($('multiDifficulty').value==='random'||q.diff===$('multiDifficulty').value));const count=MCZQuestionRotation.remaining(eligible).length;const current=Number($('roundCount').value)||5,opts=[2,5,8,10,15].filter(n=>n<=count);$('roundCount').innerHTML=opts.map(n=>'<option value="'+n+'">'+n+'</option>').join('');const ideal=opts.includes(current)?current:opts[opts.length-1];if(ideal)$('roundCount').value=String(ideal);$('availableCount').textContent=count+' unused questions available. Questions will not repeat.';$('create').disabled=!opts.length}
 $('multiCategory').onchange=refreshRoundOptions;$('multiDifficulty').onchange=refreshRoundOptions;refreshRoundOptions();$('voiceEnabled').onchange=()=>{MCZ.audio.setVoice($('voiceEnabled').checked);if(document.getElementById('acVoice'))document.getElementById('acVoice').checked=$('voiceEnabled').checked;if(!$('voiceEnabled').checked)MCZ.stopVoice()};$('replayVoice').onclick=()=>{const q=QUESTIONS.find(x=>x.id===room?.state?.queue?.[room?.state?.round]);if(q)MCZ.speak(q.q,true)};
 const name=()=>($('nickname').value.trim()||'Player').slice(0,22);
 const safe=t=>String(t??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -89,6 +89,22 @@ function connect(c){if(unsubscribe)unsubscribe();lastAudioPhase=null;lastIntroSo
 $('create').onclick=()=>{MCZ.audio.unlock();createRoom()};$('join').onclick=()=>{MCZ.audio.unlock();joinRoom()};
 $('copy').onclick=async()=>{try{await navigator.clipboard.writeText(location.origin+location.pathname+'?v='+APP_TAG+'&room='+code);msg('Invite link copied')}catch{msg('Share room code: '+code)}};
 const isHost=()=>room?.hostId===uid;
+function refreshRematchOptions(){
+ if(!room)return;
+ const cat=$('rematchCategory').value,diff=$('rematchDifficulty').value;
+ const pool=QUESTIONS.filter(q=>(cat==='All'||q.cat===cat)&&(diff==='random'||q.diff===diff));
+ const current=Number($('rematchRounds').value)||5;
+ const roomHistory=Array.isArray(room.state.history)?room.state.history:[];
+ const history=[...MCZQuestionRotation.readHistory(),...roomHistory];
+ const available=MCZQuestionRotation.remaining(pool,history).length;
+ const options=[2,5,8,10,15].filter(count=>count<=available);
+ $('rematchRounds').innerHTML=options.map(n=>'<option value="'+n+'">'+n+'</option>').join('');
+ if(options.length)$('rematchRounds').value=String(options.includes(current)?current:options[options.length-1]);
+ $('rematchAvailable').textContent=available+' unused questions in this selection. No repeats.';
+ $('rematch').disabled=!options.length;
+}
+$('rematchCategory').onchange=refreshRematchOptions;
+$('rematchDifficulty').onchange=refreshRematchOptions;
 const LEADS={Philippines:'A history, culture or geography moment from the Philippines.',"K-Drama":'Scene check: characters and plot details matter.',History:'Follow the story behind the historic event.',World:'The world is a lot bigger than one obvious guess.',Geography:'Think about borders, locations and maps.',Science:'Evidence beats a lucky guess.',Movies:'A little screen knowledge goes a long way.',Music:'An iconic sound or its history is on the line.',Sports:'Bring your sports knowledge into the arena.',Technology:'How do inventions and tech really work?',Food:'A bite-sized culinary culture check.',Animals:'A wildlife knowledge moment.',Space:'Cosmic knowledge check.',Literature:'A literary clue worth considering.',Art:'An artistic clue from across the centuries.',Mythology:'Ancient stories with surprising details.',Business:'Time to think like a decision maker.',Computers:'Bits, logic and digital lore.',Nature:'A question from the natural world.',Language:'Words and meaning matter.',Gaming:'Game lore on the line.'};
 const SCENE_LEADS={"Why do filmmakers draw storyboards before shooting a scene?":"Before a movie scene is filmed, some of its most important decisions happen on paper.","What does a musical time signature tell the performer?":"Two small numbers at the start of a music score help an entire band stay together.","Why does a badminton shuttlecock slow quickly after a hit?":"A badminton smash can be incredibly fast, yet the shuttlecock loses speed unusually quickly.","Why is two-factor authentication safer than using only a password?":"Imagine a password has been exposed. There's a second line of defense worth knowing.","What gas makes yeast-leavened bread dough rise?":"Bakers rely on tiny organisms that quietly change dough before it reaches the oven.","How do many bats find insects while flying in darkness?":"Some nighttime hunters perceive their surroundings without depending entirely on sight.","What was a central reason the United Nations was established in 1945?":"The aftermath of World War II led countries to create a new place for diplomacy.","What mainly causes ocean tides on Earth?":"Coastlines rise and fall through the day, even when the weather stays calm.","Why does Mars appear reddish in many photographs?":"Mars has a color that tells scientists something about the chemistry of its surface."};
 const REASONS={'What is the capital of the Philippines?':'Manila is the national capital where several major government institutions are based. Quezon City is another major Metro Manila city.','Which island group includes Cebu?':'Cebu belongs to the Visayas island group, specifically Central Visayas.','When was Philippine independence from Spain declared?':'The proclamation took place on June 12, 1898 at Kawit, Cavite. The later 1946 independence was from the United States.','Who was known as the “Great Plebeian”?':'Andrés Bonifacio was known by the title because of his working-class roots and revolutionary leadership.','Which treaty ended the Spanish-American War?':'The Treaty of Paris of 1898 ended the war and transferred control of the Philippines from Spain to the United States.','Historians generally consider the Code of Kalantiaw to be what?':'The supposed precolonial code lacks credible historical evidence and is considered a fabrication.','Where is Yoon Se-ri from in Crash Landing on You?':'Yoon Se-ri is a South Korean businesswoman; her accidental arrival in North Korea begins the story.','What is Woo Young-woo’s profession?':'Woo Young-woo is a lawyer who handles cases at a law firm.','Who played Do Jung-woo in Awaken (2020)?':'Namkoong Min played detective Do Jung-woo.','What is the revenge taxi company called in Taxi Driver?':'Rainbow Taxi is the cover business whose team secretly helps people seeking justice.'};
@@ -107,14 +123,16 @@ $('rematch').onclick=async()=>{
  if(!isHost()||!room||room.state.phase!=='finished')return;
  const stalePlayers=MCZMulti.outOfDate(room.players);
  const oldQueue=room.state.queue||[];
+ const cat=$('rematchCategory').value,diff=$('rematchDifficulty').value,n=Number($('rematchRounds').value);
  const roomHistory=Array.isArray(room.state.history)?room.state.history:oldQueue.map(id=>QUESTIONS.find(q=>q.id===id)).filter(Boolean).map(q=>q.q);
  const history=[...MCZQuestionRotation.readHistory(),...roomHistory];
- const nextQueue=queueFor(room.settings?.rounds||oldQueue.length,room.settings?.category||'All',room.settings?.difficulty||'random',history);
- if(!nextQueue){msg('Not enough unique questions to start another match.');return}
+ const nextQueue=queueFor(n,cat,diff,history);
+ if(!nextQueue){msg('No unused questions left for that selection. Switch category or difficulty or choose fewer questions.');refreshRematchOptions();return}
  const nextQuestions=nextQueue.map(id=>QUESTIONS.find(q=>q.id===id));
  const updates={
   'state/phase':stalePlayers.length?'lobby':'intro','state/round':stalePlayers.length?-1:0,'state/deadline':stalePlayers.length?0:Date.now()+serverOffset+5000,
   'state/queue':nextQueue,'state/history':MCZQuestionRotation.extend(roomHistory,nextQuestions),
+  'settings/category':cat,'settings/difficulty':diff,'settings/rounds':n,
   'state/matchId':'g'+makeCode(),'state/pausedRemaining':null
  };
  for(const id of Object.keys(room.players||{}))updates['players/'+id+'/score']=0;
@@ -162,6 +180,19 @@ async function finalize(){
 }
 function render(){
 if(!room)return;const st=room.state||{},phase=st.phase,host=isHost();
+const resultsKey=phase==='finished'?'finished_'+st.matchId:phase==='reveal'?MCZMulti.roundKey(st):null;
+$('resultsModal').classList.toggle('hide',!resultsKey||dismissedResults===resultsKey);
+$('betweenRounds').classList.toggle('hide',!resultsKey);
+$('outsideNext').classList.toggle('hide',!host||phase!=='reveal');
+$('betweenMessage').textContent=phase==='finished'?'Final results ready. Host can choose a new match.':'Round finished. Host controls when the next question starts.';
+$('outsideNext').textContent=st.round===st.queue.length-1?'SHOW FINAL LEADERBOARD':'NEXT QUESTION';
+if(phase==='finished'&&lastConfiguredRematch!==st.matchId){
+ lastConfiguredRematch=st.matchId;
+ $('rematchCategory').value=room.settings?.category||'All';
+ $('rematchDifficulty').value=room.settings?.difficulty||'random';
+ $('rematchRounds').value=String(room.settings?.rounds||5);
+ refreshRematchOptions();
+}
 const players=Object.entries(room.players||{}).sort((a,b)=>(b[1].score||0)-(a[1].score||0));const phaseChanged=phase!==lastAudioPhase;if(phaseChanged){lastAudioPhase=phase;if(phase==='intro'){MCZ.audio.startMusic();MCZ.audio.effect('ready');MCZ.speak('Welcome to Mind Clash Z! Ready, brainiacs? Battle of the brains begins!', $('voiceEnabled').checked)}else if(phase==='question'){MCZ.audio.startMusic();MCZ.audio.effect('go')}else if(phase==='paused'){MCZ.stopVoice();MCZ.audio.stopMusic();MCZ.audio.effect('pause')}else if(phase==='reveal'){MCZ.audio.effect('reveal')}else if(phase==='finished'){MCZ.stopVoice();MCZ.audio.stopMusic()}}$('livePanel').classList.toggle('hide',phase!=='reveal');
 $('pause').classList.toggle('hide',!host||!['question','paused'].includes(phase));$('pause').textContent=phase==='paused'?'RESUME GAME':'PAUSE GAME';
 $('quit').classList.toggle('hide',!host||['lobby','finished'].includes(phase));$('pauseMessage').classList.toggle('hide',phase!=='paused');
@@ -170,7 +201,7 @@ $('lobby').classList.toggle('hide',phase!=='lobby');
 $('questionPanel').classList.toggle('hide',!['question','paused'].includes(phase));
 $('revealPanel').classList.toggle('hide',phase!=='reveal');$('endPanel').classList.toggle('hide',phase!=='finished');
 $('introOverlay').classList.toggle('hide',phase!=='intro');
-const outdated=MCZMulti.outOfDate(room.players);$('versionWarning').textContent=outdated.length?'Please refresh and rejoin on every outdated device: '+outdated.map(p=>p.name).join(', ')+'. All players must use the latest version.':'All players are using the updated voting system.';$('start').disabled=outdated.length>0;$('start').classList.toggle('hide',!host);$('next').classList.toggle('hide',!host);$('next').textContent=st.round===st.queue.length-1?'VIEW RESULTS & PLAY AGAIN':'NEXT QUESTION';$('rematch').classList.toggle('hide',!host);
+const outdated=MCZMulti.outOfDate(room.players);$('versionWarning').textContent=outdated.length?'Please refresh and rejoin on every outdated device: '+outdated.map(p=>p.name).join(', ')+'. All players must use the latest version.':'All players are using the updated voting system.';$('start').disabled=outdated.length>0;$('start').classList.toggle('hide',!host);$('next').classList.toggle('hide',!host);$('next').textContent=st.round===st.queue.length-1?'VIEW RESULTS & PLAY AGAIN':'NEXT QUESTION';$('rematch').classList.toggle('hide',!host);$('rematchControls').classList.toggle('hide',!host);
 $('rematchNote').textContent=host?'Everyone stays in this room. Play Again resets scores and starts fresh questions.':'Waiting for the host to choose Play Again. Stay in this room; no code or rejoin needed.';$('lobbyNames').innerHTML=players.map(([id,p])=>'<div class="board">'+safe(p.name)+(id===room.hostId?' · HOST':'')+'</div>').join('');
 $('leaderboard').innerHTML=players.map(([id,p],i)=>'<div class="board"><span>'+(i===0?'👑 ':'')+(i+1)+'. '+safe(p.name)+'</span><b>'+Number(p.score||0).toLocaleString()+' pts</b></div>').join('');
 if(phase==='lobby'||phase==='intro'){$('votes').innerHTML='<p class="vote-locked">🔒 Voting counts are hidden until the answer reveal.</p>';$('totalVotes').textContent='';return}
@@ -180,7 +211,7 @@ const questionToken=answerRoundKey(st)+'_'+q.id;if(lastQid!==questionToken){last
 const answers=room.answers?.[answerRoundKey(st)]||{},chosen=answers[uid];if(chosen!==undefined)localLocked=true;
 $('questionNum').textContent='ROUND '+(st.round+1)+' / '+st.queue.length;
 $('difficulty').textContent=q.diff.toUpperCase()+(q.diff==='superhard'?' ×2':'');
-$('questionLead').textContent=SCENE_LEADS[q.q]||LEADS[q.cat]||'Think, select and then submit.';$('questionImage').innerHTML=MCZ.art(q);$('masterLine').textContent='Game Master Z: Welcome to '+q.cat+'! Pick carefully, then SUBMIT.';
+$('questionLead').textContent=SCENE_LEADS[q.q]||LEADS[q.cat]||'Think, select and then submit.';$('questionImage').innerHTML='';$('masterLine').textContent='Game Master Z: Welcome to '+q.cat+'! Pick carefully, then SUBMIT.';
 $('questionText').textContent=q.q;
 $('answerButtons').innerHTML=q.opts.map((t,i)=>'<button data-choice="'+i+'" class="'+((chosen!==undefined?chosen:selectedOption)===i?'chosen':'')+'" '+(chosen!==undefined||phase!=='question'?'disabled':'')+'><b>'+['A','B','C','D'][i]+'</b> · '+safe(t)+'</button>').join('');
 $('answerButtons').querySelectorAll('button').forEach(b=>b.onclick=()=>choose(Number(b.dataset.choice)));
@@ -192,7 +223,7 @@ const bars=counts.map((n,i)=>'<div class="vote"><label><span>'+['A','B','C','D']
 $('votes').innerHTML=bars;$('totalVotes').textContent=total+' of '+totalPlayers+' answers';
 $('revealStats').innerHTML=bars;$('revealTotal').textContent=total+' of '+totalPlayers+' submitted';
 $('correctLabel').textContent=['A','B','C','D'][q.correct]+'. '+q.opts[q.correct];
-$('factCategory').textContent=q.cat+' · '+q.diff.toUpperCase();$('fact').textContent=MCZ.explain(q);$('revealImage').innerHTML=MCZ.art(q);MCZ.stopVoice();
+$('factCategory').textContent=q.cat+' · '+q.diff.toUpperCase();$('fact').textContent=MCZ.explain(q);$('revealImage').innerHTML='';MCZ.stopVoice();
 $('bonus').textContent=q.diff==='superhard'?'SUPER HARD: 2× BASE POINTS!':'CORRECT ANSWERS EARN '+base[q.diff]+' POINTS';
 $('feedback').textContent=MCZ.feedback(q,chosen,submittedRound===answerRoundKey(st)?lastSubmittedRemaining/1000:null,seconds[q.diff]);if(phaseChanged){MCZ.audio.effect(chosen===q.correct?'correct':'wrong');MCZ.speak('Correct answer: '+q.opts[q.correct]+'. '+MCZ.explain(q),$('voiceEnabled').checked)}
 if(chosen===q.correct&&lastConfettiRound!==answerRoundKey(st)){lastConfettiRound=answerRoundKey(st);confetti()}
