@@ -27,7 +27,7 @@ body:has(#arena:not(.hide)) .wrap{max-width:850px;padding-top:12px}
 .results-window{width:min(690px,100%);max-height:90dvh;overflow:auto;overscroll-behavior:contain;background:#101b38;border:2px solid #7dffd8;border-radius:18px;box-shadow:0 20px 65px #000d}
 .modal-top{display:flex;align-items:center;justify-content:space-between;gap:8px;position:sticky;top:0;background:#101b38;padding:12px 16px;border-bottom:1px solid #405578;z-index:3}
 .modal-top b{font-size:12px;letter-spacing:.1em;color:#ffd166}
-.modal-top button{font-size:12px;padding:7px 10px;white-space:nowrap}
+.modal-top button{font-size:12px;padding:7px 10px;white-space:nowrap}.modal-top{flex-wrap:wrap}.modal-top #next,.modal-top #rematch{font-size:11px;padding:8px 11px}.modal-top #next{margin-left:auto}
 .results-window .panel{margin:0;border:0;box-shadow:none;padding:12px 16px}
 .results-window #revealPanel{background:none}
 .results-window .big{font-size:clamp(23px,4vw,34px)}
@@ -66,7 +66,7 @@ const APP_TAG='20261009d';const seconds={easy:20,medium:15,hard:12,superhard:15}
 $('lobbyMascot').innerHTML=MCZ.figure();$('questionMascot').innerHTML=MCZ.figure();
 // Keep result details in one small scrollable pop-up, never below the question.
 const resultContent=$('resultsContent');
-resultContent.append($('revealPanel'),$('endPanel'),document.querySelector('#arena aside .panel:last-child'));
+resultContent.append($('revealPanel'),$('endPanel'),document.querySelector('#arena aside .panel:last-child'));document.querySelector('.modal-top').insertBefore($('next'),$('closeResults'));document.querySelector('.modal-top').insertBefore($('rematch'),$('closeResults'));
 $('closeResults').onclick=()=>{dismissedResults=room?.state?.phase==='finished'?'finished_'+room.state.matchId:MCZMulti.roundKey(room?.state);$('resultsModal').classList.add('hide')};
 $('showResults').onclick=()=>{dismissedResults=null;$('resultsModal').classList.remove('hide')};
 $('outsideNext').onclick=()=>{if(isHost()&&room?.state?.phase==='reveal')advance(room.state.round+1)};
@@ -216,7 +216,7 @@ $('lobby').classList.toggle('hide',phase!=='lobby');
 $('questionPanel').classList.toggle('hide',!['question','paused'].includes(phase));
 $('revealPanel').classList.toggle('hide',phase!=='reveal');$('endPanel').classList.toggle('hide',phase!=='finished');
 $('introOverlay').classList.toggle('hide',phase!=='intro');
-const outdated=MCZMulti.outOfDate(room.players);$('versionWarning').textContent=outdated.length?'Please refresh and rejoin on every outdated device: '+outdated.map(p=>p.name).join(', ')+'. All players must use the latest version.':'All players are using the updated voting system.';$('start').disabled=outdated.length>0;$('start').classList.toggle('hide',!host);$('next').classList.toggle('hide',!host);$('next').textContent=st.round===st.queue.length-1?'VIEW RESULTS & PLAY AGAIN':'NEXT QUESTION';$('rematch').classList.toggle('hide',!host);$('rematchControls').classList.toggle('hide',!host);
+const outdated=MCZMulti.outOfDate(room.players);$('versionWarning').textContent=outdated.length?'Please refresh and rejoin on every outdated device: '+outdated.map(p=>p.name).join(', ')+'. All players must use the latest version.':'All players are using the updated voting system.';$('start').disabled=outdated.length>0;$('start').classList.toggle('hide',!host);$('next').classList.toggle('hide',!host||phase!=='reveal');$('next').textContent=st.round===st.queue.length-1?'VIEW RESULTS & PLAY AGAIN':'NEXT QUESTION';$('rematch').classList.toggle('hide',!host||phase!=='finished');$('rematchControls').classList.toggle('hide',!host);
 $('rematchNote').textContent=host?'Everyone stays in this room. Play Again resets scores and starts fresh questions.':'Waiting for the host to choose Play Again. Stay in this room; no code or rejoin needed.';$('lobbyNames').innerHTML=players.map(([id,p])=>'<div class="board">'+safe(p.name)+(id===room.hostId?' · HOST':'')+'</div>').join('');
 $('leaderboard').innerHTML=players.map(([id,p],i)=>'<div class="board"><span>'+(i===0?'👑 ':'')+(i+1)+'. '+safe(p.name)+'</span><b>'+Number(p.score||0).toLocaleString()+' pts</b></div>').join('');
 if(phase==='lobby'||phase==='intro'){$('votes').innerHTML='<p class="vote-locked">🔒 Voting counts are hidden until the answer reveal.</p>';$('totalVotes').textContent='';return}
